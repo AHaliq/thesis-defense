@@ -7,12 +7,16 @@
   aspect-ratio: "16-9",
   config-info(
     title: [Master's Thesis Examination],
-    subtitle: [Light Node Catchup Using Incrementally Verifiable Chain of Signatures - Plonk Arithmetization Formal Specification],
+    subtitle: [#text(size: 0.8em)[Light Node Catchup Using Incrementally Verifiable Chain of Signatures] \ #emph[#text(
+        size: 0.7em,
+      )[Focus of presentation: Plonk Arithmetization Formal Specification]]],
     author: [#strong[supervisor]: Diego Aranha, #strong[co-supervisor]: Hamidreza Khoshakhlagh #linebreak() #v(0em) Rasmus Kirk Jakobsen, #underline[Abdul Haliq Abdul Latiff]],
     date: datetime(year: 2025, month: 9, day: 26),
     institution: [Aarhus Universitet],
   ),
 )
+
+// EXPECTED PACE: 1min 30sec per slide
 
 // smallcaps font
 #show smallcaps: set text(font: "Latin Modern Roman Caps")
@@ -66,7 +70,7 @@
     )
   $
 ][
-  TODO: PCDL fast at a high level
+  TODO: PCDL fast (no check) at a high level
 ]
 
 #pagebreak(weak: true)
@@ -119,6 +123,8 @@ $IVC = ...$
 
 TODO kirk's diagram from thesis
 
+TODO how catchup uses this (at high level) / the loop explicitly (IVC verify fast, IVC verify full at end)
+
 == Plonk Language
 
 Plonk is a snark
@@ -134,8 +140,8 @@ TODO (message passing at a high level and where it is used)
 #let plonkprover = [$plonk$.#smallcaps("Prover")];
 #let plonkverifier = [$plonk$.#smallcaps("Verifier")];
 #align(center)[$
-  P arrow.r.squiggly V & : plonkprover(vec(R), vec(W))       &                = pi \
-                     V & : plonkverifier(pi, vec(X), vec(R)) & attach(=, t: ?) top
+  P arrow.r.squiggly V & : plonkprover(vec(X), vec(R), vec(W)) &               = & pi \
+                     V & : plonkverifier(pi, vec(X), vec(R))   & attach(=, t: ?) & top
 $]
 
 TODO
@@ -145,21 +151,26 @@ TODO
   - schwartz-zippel lemma
 - Batched Evaluation Proofs
   - $F_(G C)$, $F_(C C 1)$, $F_(C C 2)$, and possibly $F_(P L 1)$, $F_(P L 2)$
+  - example F_GC?
 
 == Motivation
 
 #let arith = smallcaps("Arithmetize");
 #let pub = $p u b$;
 #align(center)[$
-  P arrow.r.squiggly V & : plonkprover compose arith(vec(w),IVC)       &                = pi \
+  P arrow.r.squiggly V & : plonkprover compose arith(vec(w), IVC)            &                = pi \
                      V & : plonkverifier(pi) compose arith_pub (vec(x), IVC) & attach(=, t: ?) top
 $]
 
-#align(center)[#emph[a program is arithmetizable if it can be decomposed into canonical programs of the scheme]]
+#align(center)[#text(size: 0.8em)[#emph[
+1. a program is arithmetizable if it can be decomposed into canonical programs of the scheme
+2. a scheme is viable if the curve can express the total number of constraints
+3. light node is viable if the verifier performance is "acceptable"
+]]]
 
 TODO
-- custom multi in out gates (turbo plonk) via properads
-- constraint reduction via relative wires
+- multi in out gates (turbo plonk) & type safe (halo) via properads
+- constraint reduction via relative wires; gate order invariant
 - possible constraint reduction via rewriting of algebraic identities
 - elegant handling of transcript hash via index maps
 - user extensible single source of truth scheme via spec
@@ -168,21 +179,23 @@ TODO
 
 == Pipeline
 
-TODO
 #slide(align: center + horizon)[
   $
-    arith(vec(w), IVC) = ...
+      & (vec(X), vec(R), vec(W)) \
+    = & arith(vec(w), IVC) = ...
   $
+  TODO
 ][
   $
-    arith_pub (vec(x), IVC) = ...
+      & (vec(X), vec(R)) \
+    = & arith_pub (vec(x), IVC) = ...
   $
 ]
 
 == Build
 
 TODO
-- spec abstractions table
+- spec abstractions table; constraint, gate, properads
 - build predicate
 - example proof and abstract circuit diagram
 
@@ -225,4 +238,5 @@ TODO
 TODO
 - properad and relative gate compute caching
 - egglog rewriting
-- correctness and soundness proofs
+- dependent properads (e.g.table row count dependent properads); root of unity, optimal multi lookup
+- full correctness and soundness proofs
