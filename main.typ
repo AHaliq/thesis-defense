@@ -14,6 +14,9 @@
   ),
 )
 
+// smallcaps font
+#show smallcaps: set text(font: "Latin Modern Roman Caps")
+
 #set heading(numbering: numbly("{1}.", default: "1.1"))
 
 #title-slide()
@@ -26,13 +29,153 @@
 
 == Light Node Catchup
 
+// AS.Verifier
+#let accscheme = $#math.upright("AS")$;
+#let verifier = [#smallcaps("Verifier")];
+#let asverifier = [$accscheme$.#verifier];
+// bold vector notation
+#let vec(x) = $#math.bold(x)$;
+// acc
+#let acc = $#math.text("acc")$;
+// gray out
+#let grayed(x) = text(fill: gray, $#x$)
+
+#slide(align: center + horizon)[
+  $
+    asverifier(vec(q), acc_(i-1), acc_i)
+  $
+][
+  TODO: Accumulation Schemes at a high level (instances and accumulators)
+]
+
+#pagebreak(weak: true)
+
+// Plonk.VerifierFast
+#let plonk = $#math.upright("PLONK")$;
+#let fast = [#smallcaps("Fast")];
+#let pverfast = [$plonk$.#verifier#fast];
+//R_IVC
+#let IVC = $I V C$;
+#let rivc = $R_(IVC)$;
+
+#slide(align: center + horizon)[
+  $
+    script(
+          & grayed(asverifier(vec(q), acc_(i-1), acc_i)) \
+      and & pverfast(rivc, x_(i-1), pi_(i-1))
+    )
+  $
+][
+  TODO: PCDL fast at a high level
+]
+
+#pagebreak(weak: true)
+
+#let ivcver = [$IVC$.#verifier];
+
+#align(center + horizon)[$
+  #math.text("Let ") & ivcver(vec(q), acc_(i-1), acc_i, rivc, x_(i-1), pi_(i-1)) \
+                     & =
+                       asverifier(vec(q), acc_(i-1), acc_i) \
+                     & and pverfast(rivc, x_(i-1), pi_(i-1))
+$]
+
+#pagebreak(weak: true)
+
+#slide(align: center + horizon)[
+  $
+        & ivcver^p (vec(q)^((p)), dots, rivc^((p)), dots) \
+    and & ivcver^q (vec(q)^((q)), dots, rivc^((q)), dots)
+  $
+][
+  TODO: Cycle of Curves & Pasta Curves at a high level
+]
+
+#pagebreak(weak: true)
+
+#slide(align: center + horizon)[
+  $
+        & (... \
+     or & s_(i-1) attach(=, t: ?) s_0) \
+    and & F(s_(i-1), s_i)
+  $
+][
+  TODO: IVC at a high level (where s comes from)
+]
+
+#pagebreak(weak: true)
+
+#slide(align: center + horizon)[
+  $
+    F = ...
+  $
+][
+  TODO: Chain of Signatures at a high level
+]
+
+#pagebreak(weak: true)
+
+$IVC = ...$
+
+TODO kirk's diagram from thesis
+
 == Plonk Language
+
+Plonk is a snark
+#align(center)[$
+  (vec(x), vec(w)) in R_IVC
+$]
+where $IVC(vec(w))$ is output of program and $vec(x)$ is public input
+
+TODO (message passing at a high level and where it is used)
 
 == Plonk Protocol
 
+#let plonkprover = [$plonk$.#smallcaps("Prover")];
+#let plonkverifier = [$plonk$.#smallcaps("Verifier")];
+#align(center)[$
+  P arrow.r.squiggly V & : plonkprover(vec(R), vec(W))       &                = pi \
+                     V & : plonkverifier(pi, vec(X), vec(R)) & attach(=, t: ?) top
+$]
+
+TODO
+- Grand Product Argument
+  - $f,g mapsto (F_1, F_2)$
+- Vanishing Argument
+  - schwartz-zippel lemma
+- Batched Evaluation Proofs
+  - $F_(G C)$, $F_(C C 1)$, $F_(C C 2)$, and possibly $F_(P L 1)$, $F_(P L 2)$
+
 == Motivation
 
+#let arith = smallcaps("Arithmetize");
+#let pub = $p u b$;
+#align(center)[$
+  P arrow.r.squiggly V & : plonkprover compose arith(vec(w),IVC)       &                = pi \
+                     V & : plonkverifier(pi) compose arith_pub (vec(x), IVC) & attach(=, t: ?) top
+$]
+
+#align(center)[#emph[a program is arithmetizable if it can be decomposed into canonical programs of the scheme]]
+
+- custom multi in out gates (turbo plonk) via properads
+- constraint reduction via relative wires
+- possible constraint reduction via rewriting of algebraic identities
+- elegant handling of transcript hash via index maps
+- user extensible single source of truth scheme via spec
+
 = Plonk Arithmetization
+
+== Pipeline
+
+#slide(align: center + horizon)[
+  $
+    arith(vec(w), IVC) = ...
+  $
+][
+  $
+    arith_pub (vec(x), IVC) = ...
+  $
+]
 
 == Build
 
