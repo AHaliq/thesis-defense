@@ -7,7 +7,7 @@
   aspect-ratio: "16-9",
   config-info(
     title: [Master's Thesis Examination],
-    subtitle: [Light Node Catchup Using Incrementaly Verifiable Chain of Signatures - Plonk Arithmetization Formal Specification],
+    subtitle: [Light Node Catchup Using Incrementally Verifiable Chain of Signatures - Plonk Arithmetization Formal Specification],
     author: [#strong[supervisor]: Diego Aranha, #strong[co-supervisor]: Hamidreza Khoshakhlagh #linebreak() #v(0em) Rasmus Kirk Jakobsen, #underline[Abdul Haliq Abdul Latiff]],
     date: datetime(year: 2025, month: 9, day: 26),
     institution: [Aarhus Universitet],
@@ -157,6 +157,7 @@ $]
 
 #align(center)[#emph[a program is arithmetizable if it can be decomposed into canonical programs of the scheme]]
 
+TODO
 - custom multi in out gates (turbo plonk) via properads
 - constraint reduction via relative wires
 - possible constraint reduction via rewriting of algebraic identities
@@ -167,6 +168,7 @@ $]
 
 == Pipeline
 
+TODO
 #slide(align: center + horizon)[
   $
     arith(vec(w), IVC) = ...
@@ -179,20 +181,48 @@ $]
 
 == Build
 
+TODO
+- spec abstractions table
+- build predicate
+- example proof and abstract circuit diagram
+
 == Abstractions
+
+TODO
+- index maps & equations
+  - F_GC (emphasis ease of use in arith, prover and verifier)
 
 == Trace
 
-== Trace: Resolve
-
-== Trace: Gate
-
-== Trace: Copy
+TODO
+- monotone functions
+- resolve, gate, copy; and public variants
 
 == Interpolate
 
+TODO
+- root of unity and cosets
+- fast fourier interpolation
+
 == Example
+
+TODO
+- poseidon gate
+- message passing gate & public input gate
 
 = Conclusion
 
-= Future Work
+== Conclusion
+
+TODO
+- IVC for light node catchup
+- informs arithmetization demands
+- benefits of formalization
+- general scheme extending beyond thesis use case and even plonk
+
+== Future Work
+
+TODO
+- properad and relative gate compute caching
+- egglog rewriting
+- correctness and soundness proofs
