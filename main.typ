@@ -123,7 +123,7 @@ $IVC = ...$
 
 TODO kirk's diagram from thesis
 
-TODO how catchup uses this (at high level) / the loop explicitly (IVC verify fast, IVC verify full at end)
+TODO IVC chain / loop diagram
 
 == Plonk Language
 
@@ -236,7 +236,8 @@ TODO
 == Future Work
 
 TODO
+- full specification (copy, interpolate, prover, verifier); agda? hacspec?
 - properad and relative gate compute caching
 - egglog rewriting
-- dependent properads (e.g.table row count dependent properads); root of unity, optimal multi lookup
-- full correctness and soundness proofs
+- dependent properads (e.g.table row count dependent properads); root of unity, optimal multi lookup (dynamic mina lookups)
+- full correctness and soundness proofs of arith
