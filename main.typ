@@ -29,7 +29,7 @@
 
 #components.adaptive-columns(outline(title: none, indent: 1em))
 
-= Overview
+= Introduction
 
 == Light Node Catchup
 
@@ -54,8 +54,13 @@
 
 #pagebreak(weak: true)
 
-// Plonk.VerifierFast
+// Plonk
 #let plonk = $#math.upright("PLONK")$;
+// Plonk.Prover
+#let plonkprover = [$plonk$.#smallcaps("Prover")];
+// Plonk.Verifier
+#let plonkverifier = [$plonk$.#smallcaps("Verifier")];
+// Plonk.VerifierFast
 #let fast = [#smallcaps("Fast")];
 #let pverfast = [$plonk$.#verifier#fast];
 //R_IVC
@@ -75,6 +80,7 @@
 
 #pagebreak(weak: true)
 
+// IVC.Verifier
 #let ivcver = [$IVC$.#verifier];
 
 #align(center + horizon)[$
@@ -125,7 +131,7 @@ TODO kirk's diagram from thesis
 
 TODO IVC chain / loop diagram
 
-== Plonk Language
+== Plonk
 
 Plonk is a snark
 #align(center)[$
@@ -135,10 +141,8 @@ where $IVC(vec(w))$ is output of program and $vec(x)$ is public input
 
 TODO (message passing at a high level and where it is used)
 
-== Plonk Protocol
+#pagebreak(weak: true)
 
-#let plonkprover = [$plonk$.#smallcaps("Prover")];
-#let plonkverifier = [$plonk$.#smallcaps("Verifier")];
 #align(center)[$
   P arrow.r.squiggly V & : plonkprover(vec(X), vec(R), vec(W)) &               = & pi \
                      V & : plonkverifier(pi, vec(X), vec(R))   & attach(=, t: ?) & top
@@ -155,17 +159,20 @@ TODO
 
 == Motivation
 
+// Arithmetize
 #let arith = smallcaps("Arithmetize");
+// Arithmetize_pub
 #let pub = $p u b$;
+
 #align(center)[$
   P arrow.r.squiggly V & : plonkprover compose arith(vec(w), IVC)            &                = pi \
                      V & : plonkverifier(pi) compose arith_pub (vec(x), IVC) & attach(=, t: ?) top
 $]
 
 #align(center)[#text(size: 0.8em)[#emph[
-1. a program is arithmetizable if it can be decomposed into canonical programs of the scheme
-2. a scheme is viable if the curve can express the total number of constraints
-3. light node is viable if the verifier performance is "acceptable"
+  1. a program is arithmetizable if it can be decomposed into canonical programs of the scheme
+  2. a scheme is viable if the curve can express the total number of constraints
+  3. light node is viable if the verifier performance is "acceptable"
 ]]]
 
 TODO
@@ -175,7 +182,7 @@ TODO
 - elegant handling of transcript hash via index maps
 - user extensible single source of truth scheme via spec
 
-= Plonk Arithmetization
+= Arithmetization
 
 == Pipeline
 
@@ -219,7 +226,7 @@ TODO
 
 == Example
 
-TODO
+TODO: tie to motivation in overview
 - poseidon gate
 - message passing gate & public input gate
 
@@ -238,6 +245,6 @@ TODO
 TODO
 - full specification (copy, interpolate, prover, verifier); agda? hacspec?
 - properad and relative gate compute caching
-- egglog rewriting
+- user domain specific algebraic optimization via egglog rewriting
 - dependent properads (e.g.table row count dependent properads); root of unity, optimal multi lookup (dynamic mina lookups)
 - full correctness and soundness proofs of arith
