@@ -14,6 +14,7 @@
     date: datetime(year: 2025, month: 9, day: 26),
     institution: [Aarhus Universitet],
   ),
+  footer-a: [Abdul Haliq Abdul Latiff],
 )
 
 // EXPECTED PACE: 1min 30sec per slide
@@ -65,13 +66,13 @@
 #let pverfast = [$plonk$.#verifier#fast];
 //R_IVC
 #let IVC = $I V C$;
-#let rivc = $R_(IVC)$;
+#let rivc = $vec(R)_(IVC)$;
 
 #slide(align: center + horizon)[
   $
     script(
           & grayed(asverifier(vec(q), acc_(i-1), acc_i)) \
-      and & pverfast(rivc, x_(i-1), pi_(i-1))
+      and & pverfast(pi_(i-1), vec(X)_(i-1), rivc)
     )
   $
 ][
@@ -81,21 +82,21 @@
 #pagebreak(weak: true)
 
 // IVC.Verifier
-#let ivcver = [$IVC$.#verifier];
+#let ivcver = [#smallcaps("Verifiers")];
 
 #align(center + horizon)[$
-  #math.text("Let ") & ivcver(vec(q), acc_(i-1), acc_i, rivc, x_(i-1), pi_(i-1)) \
+  #math.text("Let ") & ivcver(vec(q), acc_(i-1), acc_i, pi_(i-1), vec(X)_(i-1), rivc) \
                      & =
-                       asverifier(vec(q), acc_(i-1), acc_i) \
-                     & and pverfast(rivc, x_(i-1), pi_(i-1))
+                       grayed(asverifier(vec(q), acc_(i-1), acc_i)) \
+                     & grayed(and pverfast(pi_(i-1), vec(X)_(i-1), rivc))
 $]
 
 #pagebreak(weak: true)
 
 #slide(align: center + horizon)[
   $
-        & ivcver^p (vec(q)^((p)), dots, rivc^((p)), dots) \
-    and & ivcver^q (vec(q)^((q)), dots, rivc^((q)), dots)
+        & ivcver^p (vec(q)^((p)), dots, rivc^((p))) \
+    and & ivcver^q (vec(q)^((q)), dots, rivc^((q)))
   $
 ][
   TODO: Cycle of Curves & Pasta Curves at a high level
@@ -105,9 +106,9 @@ $]
 
 #slide(align: center + horizon)[
   $
-        & (... \
-     or & s_(i-1) attach(=, t: ?) s_0) \
-    and & F(s_(i-1), s_i)
+        & ((ivcver^p (dots) and ivcver^q (dots)) \
+     &or s_(i-1) attach(=, t: ?) s_0) \
+    &and F(s_(i-1), s_i)
   $
 ][
   TODO: IVC at a high level (where s comes from)
@@ -120,16 +121,14 @@ $]
     F = ...
   $
 ][
-  TODO: Chain of Signatures at a high level
+  TODO: Chain of Signatures at a high level (chain / loop diagram)
 ]
 
 #pagebreak(weak: true)
 
-$IVC = ...$
-
-TODO kirk's diagram from thesis
-
-TODO IVC chain / loop diagram
+#figure(
+  image("./media/rivc_diagram.png", width: 100%),
+)
 
 == Plonk
 
@@ -139,7 +138,7 @@ Plonk is a snark
 $]
 where $IVC(vec(w))$ is output of program and $vec(x)$ is public input
 
-TODO (message passing at a high level and where it is used)
+TODO (public inputs at a high level)
 
 #pagebreak(weak: true)
 
@@ -148,14 +147,15 @@ TODO (message passing at a high level and where it is used)
                      V & : plonkverifier(pi, vec(X), vec(R))   & attach(=, t: ?) & top
 $]
 
-TODO
-- Grand Product Argument
-  - $f,g mapsto (F_1, F_2)$
-- Vanishing Argument
-  - schwartz-zippel lemma
-- Batched Evaluation Proofs
-  - $F_(G C)$, $F_(C C 1)$, $F_(C C 2)$, and possibly $F_(P L 1)$, $F_(P L 2)$
-  - example F_GC?
+#let fgc = $F_(G C)$;
+
+TODO (maybe multi slides here)
+- Semantic Polynomials
+  - Gate Constraint Polynomial $fgc$
+  - Grand Product Argument $product f(X) = product g(X) arrow.r.squiggly F_1, F_2$
+- Subprotocols
+  - Vanishing Argument (schwartz-zippel lemma) $forall F(X) = 0 and F != 0$
+  - Batched Evaluation Proofs
 
 == Motivation
 
@@ -169,33 +169,54 @@ TODO
                      V & : plonkverifier(pi) compose arith_pub (vec(x), IVC) & attach(=, t: ?) top
 $]
 
-#align(center)[#text(size: 0.8em)[#emph[
+#pause
+#align(center)[#text(size: 0.75em)[#emph[
   1. a program is arithmetizable if it can be decomposed into canonical programs of the scheme
   2. a scheme is viable if the curve can express the total number of constraints
   3. light node is viable if the verifier performance is "acceptable"
-]]]
+]
+#pause
+#align(left)[
+#emph("features") (#strong("C")- correctness, #strong("O")- optimization, #strong("E")- expressivity)]
+#table(
+  columns: (1fr, 10fr),
+  inset: 10pt,
+  align: horizon + left,
+  [#strong("O,E")],
+  [type safe multi in out gates via properads],
+  [#strong("O,E")],
+  [rewriting of user defined algebraic identities],
+  [#strong("E")],
+  [elegant handling of transcript hash via index maps],
+  [#strong("C,E")],
+  [user extensible single source of truth scheme via spec],
+  [#strong("C,O")],
+  [relative wires; gate declaration invariant]
+)
+]]
 
-TODO
-- multi in out gates (turbo plonk) & type safe (halo) via properads
-- constraint reduction via relative wires; gate order invariant
-- possible constraint reduction via rewriting of algebraic identities
-- elegant handling of transcript hash via index maps
-- user extensible single source of truth scheme via spec
+
+
 
 = Arithmetization
 
 == Pipeline
 
+#let interpolate = $text("interpolate")$
+#let trace = $text("trace")$;
+#let tracepub = $text("trace")_pub$;
+#let build = $text("build")$;
 #slide(align: center + horizon)[
   $
       & (vec(X), vec(R), vec(W)) \
-    = & arith(vec(w), IVC) = ...
+    = & arith(vec(w), IVC) \
+    = & interpolate compose trace compose build
   $
-  TODO
 ][
   $
       & (vec(X), vec(R)) \
-    = & arith_pub (vec(x), IVC) = ...
+    = & arith_pub (vec(x), IVC) \
+    = & interpolate compose tracepub compose build
   $
 ]
 
@@ -215,8 +236,24 @@ TODO
 == Trace
 
 TODO
-- monotone functions
-- resolve, gate, copy; and public variants
+- trace defn of mono compose
+
+#let copym = $text("copy")$;
+#let gatem = $text("gate")$;
+#let gatempub = $text("gate")_pub$;
+#let resolvem = $text("resolve")$;
+
+#table(
+  columns: (1fr, 1fr, 1fr, 1fr),
+  inset: 10pt,
+  align: horizon + center,
+  table.header($copym$, $gatem$, $gatempub$, $resolvem$),
+  [a],
+  [b],
+  [c],
+  [d]
+)
+
 
 == Interpolate
 
@@ -232,7 +269,7 @@ TODO: tie to motivation in overview
 
 = Conclusion
 
-== Conclusion
+== Summary
 
 TODO
 - IVC for light node catchup
