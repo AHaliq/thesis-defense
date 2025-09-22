@@ -56,7 +56,7 @@
     stroke: black,
     inset: 1em,
     $
-      script((q_i, acc_i) #h(0.5em) attach(stretch(->), t: \_ #h(0.5em) dot.circle asprover) #h(0.5em) (q_(i+1), acc_(i+1))) \
+      script((q_i, acc_i) #h(0.5em) stretch(->) #h(0.5em) (q_(i+1), acc_(i+1))) \
       sscript(Phi(q_i) = top)
     $,
   )
@@ -137,10 +137,10 @@
   #box(stroke: black, inset: 1em, [
     #emph([More on this in message passing])])
 ][
-  Computing commits uses scalar multiplication; $m G$, thus two fields; scalar $m: FF_cal(S)$ and base $G: EE(FF_cal(B))$. Pasta curves is a two cycle of curves where the scalar field of the other is its base field. This can express $m G$ in IVC.
+  Computing commits uses scalar multiplication; $m G$, thus two fields; scalar $m: FF_cal(S)$ and base $G: EE(FF_cal(B))$. Pasta curves is a two cycle of curves where the scalar field of the other is its base field. This can express $m G$ as a circuit.
 
   #emph(
-    [Think: A circuit has multiple types. If a circuit of $f$ has canonical type $t$, then $f^((p))$ sets $t = p$ and $t'=q$],
+    [Think: A circuit has multiple types. If a circuit $vec(R)^((t))$ has canonical type $t$, then $vec(R)^((p))$ sets $t = p$ and $t'=q$],
   )
 ]
 
@@ -171,23 +171,40 @@
 ][
   Incrementally verifiable computation thus amounts to the secure computation; compressed to one accumulator, of repeated application of $F$ over $s_0$.
 
-  #emph([Think: $F$ and $s$ are the payload of the secure compute by $IVC$. Note, $rivc$ contains $F$])
+  #emph([Think: $F$ and $s$ are the payload of the secure compute by $IVC$. Note, $F$ is embedded in $rivc$])
 ]
 
 // s is value from COS
 // F, s are the actual payload
 // everything else guarantees secure compute of F and accumulation integrity of repeated application
-// TODO how are polynomials encoded in a circuit; vec(R), vec(X).
 
 #pagebreak(weak: true)
 
+#let schnorr = [$text("SCHNORR")$];
+#let schnorrsign = [$schnorr.#smallcaps("Sign")$];
+#let schnorrverify = [$schnorr.#smallcaps("Verify")$];
 #slide(align: center + horizon)[
   $
-    F(s) = ...
+    F(s) = ... schnorrsign ...
   $
+  #v(1em)
+  #box(stroke: black, inset: 1em, [
+    $
+      script(text(#emoji.silhouette.double)_i #h(0.5em) attach(stretch(->), t: schnorrsign) #h(0.5em) text(#emoji.silhouette.double)_(i+1))
+    $
+    $
+      sscript(
+        Phi(pi_i) & = schnorrverify(text(#emoji.silhouette.double)_(i+1),text(#emoji.silhouette.double)_i)
+      )
+    $])
 ][
-  TODO: Chain of Signatures & catchup at a high level
+  $s$ contains the current committee public key. $F$ is the current committee signing off the next committee.
+
+  #emph([Think: Instead of chain of blocks its chain of signatures (with block data). New committee provided via public inputs.])
 ]
+
+// Schnorr can be defined in terms of poseidon hashing thus $F$ is arithmetizable
+// This does not solve problems of branching and finality. Same strategy as standard blockchains.
 
 #pagebreak(weak: true)
 
@@ -197,13 +214,28 @@
 
 == Plonk
 
-Plonk is a snark
+
+#align(center)[#emph([
+PLONK is a #strong("S")uccint #strong("N")on-interactive #strong("AR")gument of #strong("K")nowledge
+
+Very small proofs of large statements
+])]
+
 #align(center)[$
   (vec(x), vec(w)) in R_IVC
 $]
-where $IVC(vec(w))$ is output of program and $vec(x)$ is public input
+- *Witnesses* are inputs to programs; e.g. $IVC(vec(w))$
+- *Public Inputs* are "_interfaces_" to
+  - assert values
+  - instantiate / "_inject_" values
 
-TODO (public inputs at a high level)
+#text(size: 0.8em)[
+e.g. take the program $f(w) = (a times w) + w$, if $vec(x) = (a, a times w)$ then $((2,6),(3)) in vec(R)_f$.
+
+Here $a=2$ is injected, whereas $a times w=6$ is asserted.
+]
+
+// the witness isn't guaranteed private, not just due to the program structure, but also the polynomials aren't blinded. The SNARK simply serves as guarantee of correct computation.
 
 #pagebreak(weak: true)
 
@@ -262,10 +294,10 @@ $]
 #let interpolate = $text("interpolate")$
 #let trace = $text("trace")$;
 #let tracepub = $text("trace")_pub$;
-#let build = $text("build")$;
+#let buildf = $text("build")$;
 $
-  (vec(X), vec(R), vec(W)) & = arith(vec(w), IVC)      && = interpolate compose trace compose build \
-          (vec(X), vec(R)) & = arith_pub (vec(x), IVC) && = interpolate compose tracepub compose build
+  (vec(X), vec(R), vec(W)) & = arith(vec(w), IVC)      && = interpolate compose trace compose buildf \
+          (vec(X), vec(R)) & = arith_pub (vec(x), IVC) && = interpolate compose tracepub compose buildf
 $
 #pause
 TODO program > abstract circuit diagram > trace table > XRW
@@ -275,7 +307,6 @@ TODO program > abstract circuit diagram > trace table > XRW
 #align(center)[#emph([denotational semantics of a program is its abstract circuit])]
 
 #let build(x) = $bracket.l.double #x bracket.r.double$;
-
 $
   #build($x^2 + y = z^*$)
 $
