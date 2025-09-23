@@ -2,6 +2,7 @@
 #import themes.university: *
 
 #import "@preview/numbly:0.1.0": numbly
+#import "@preview/circuiteria:0.2.0"
 
 #show: university-theme.with(
   aspect-ratio: "16-9",
@@ -193,14 +194,14 @@
       script(text(#emoji.silhouette.double)_i #h(0.5em) attach(stretch(->), t: schnorrsign) #h(0.5em) text(#emoji.silhouette.double)_(i+1))
     $
     $
-      sscript(
-        Phi(pi_i) & = schnorrverify(text(#emoji.silhouette.double)_(i+1),text(#emoji.silhouette.double)_i)
-      )
+      sscript(Phi(pi_i) & = schnorrverify(text(#emoji.silhouette.double)_(i+1), text(#emoji.silhouette.double)_i))
     $])
 ][
   $s$ contains the current committee public key. $F$ is the current committee signing off the next committee.
 
-  #emph([Think: Instead of chain of blocks its chain of signatures (with block data). New committee provided via public inputs.])
+  #emph(
+    [Think: Instead of chain of blocks its chain of signatures (with block data). New committee provided via public inputs.],
+  )
 ]
 
 // Schnorr can be defined in terms of poseidon hashing thus $F$ is arithmetizable
@@ -216,26 +217,62 @@
 
 
 #align(center)[#emph([
-PLONK is a #strong("S")uccint #strong("N")on-interactive #strong("AR")gument of #strong("K")nowledge
+  PLONK is a #strong("S")uccint #strong("N")on-interactive #strong("AR")gument of #strong("K")nowledge
 
-Very small proofs of large statements
+  Very small proofs of large statements
 ])]
 
 #align(center)[$
   (vec(x), vec(w)) in R_IVC
 $]
-- *Witnesses* are inputs to programs; e.g. $IVC(vec(w))$
-- *Public Inputs* are "_interfaces_" to
+- *Witnesses* are input to programs; e.g. $IVC(vec(w))$
+- *Public Inputs* are "_interfaces_" that behaviorally
   - assert values
   - instantiate / "_inject_" values
 
 #text(size: 0.8em)[
-e.g. take the program $f(w) = (a times w) + w$, if $vec(x) = (a, a times w)$ then $((2,6),(3)) in vec(R)_f$.
+  e.g. take the program $f(w) = (a times w) + w$, if $vec(x) = (a, a times w)$ then $((2,6),(3)) in vec(R)_f$.
 
-Here $a=2$ is injected, whereas $a times w=6$ is asserted.
+  Here $a=2$ is injected, whereas $a times w=6$ is asserted.
 ]
 
 // the witness isn't guaranteed private, not just due to the program structure, but also the polynomials aren't blinded. The SNARK simply serves as guarantee of correct computation.
+
+#pagebreak(weak: true)
+
+#let fgc = $F_(G C)$;
+#let fgcplonk = $fgc^(cal("P")frak("lon")cal("K"))$;
+
+#align(center)[$
+  P arrow.r.squiggly V & : plonkprover(vec(X), vec(R), vec(W)) &               = & pi \
+                     V & : plonkverifier(pi, vec(X), vec(R))   & attach(=, t: ?) & top
+$]
+
+#grid(
+  columns: (1fr, 1fr),
+  inset: 10pt,
+  align: horizon,
+  [
+    1. *Gate Constraint Polynomial*
+    2. Vanishing Argument
+    3. Copy Constraints
+    4. Grand Product Argument
+    5. Batched Evaluation Proofs
+  ],
+  [
+    #table(
+      columns: (1fr, 1fr, 1fr, 1fr),
+      align: horizon + center,
+      inset: 10pt,
+      table.cell(colspan: 4, $t$),
+      $X$, $A_1$, $A_2$, $A_3$,
+      $omega^1$, $1$, $2$, $3$, $omega^2$, $42$, $12$, $54$,
+    )
+    $
+      F(X) = A_1(X) + A_2(X) - A_3(X)
+    $
+  ],
+)
 
 #pagebreak(weak: true)
 
@@ -244,15 +281,172 @@ Here $a=2$ is injected, whereas $a times w=6$ is asserted.
                      V & : plonkverifier(pi, vec(X), vec(R))   & attach(=, t: ?) & top
 $]
 
-#let fgc = $F_(G C)$;
+#grid(
+  columns: (1fr, 1fr),
+  inset: 10pt,
+  align: horizon,
+  [
+    1. Gate Constraint Polynomial
+    2. *Vanishing Argument*
+    3. Copy Constraints
+    4. Grand Product Argument
+    5. Batched Evaluation Proofs
+  ],
+  [
+    $
+      forall omega^i in H: F(omega^i) attach(=, t: ?) 0 \
+      T(omega^i) = F(omega^i) / (Z_H (omega^i)) \
+      v_F attach(=, t: ?) v_T times Z_H (xi)
+    $
+    #align(center)[
+      #emph([
+        $Z_H$ for factor theorem; $attach(=, t: ?) 0$
 
-TODO (maybe multi slides here)
-- Semantic Polynomials
-  - Gate Constraint Polynomial $fgc$
-  - Grand Product Argument $product f(X) = product g(X) arrow.r.squiggly F_1, F_2$
-- Subprotocols
-  - Vanishing Argument (schwartz-zippel lemma) $forall F(X) = 0 and F != 0$
-  - Batched Evaluation Proofs
+        $xi$ for Schwartz-Zippel; $F != 0$
+      ])]
+  ],
+)
+
+#pagebreak(weak: true)
+
+#align(center)[$
+  P arrow.r.squiggly V & : plonkprover(vec(X), vec(R), vec(W)) &               = & pi \
+                     V & : plonkverifier(pi, vec(X), vec(R))   & attach(=, t: ?) & top
+$]
+
+#grid(
+  columns: (1fr, 1fr),
+  inset: 10pt,
+  align: horizon,
+  [
+    1. Gate Constraint Polynomial
+    2. *Vanishing Argument*
+    3. Copy Constraints
+    4. Grand Product Argument
+    5. Batched Evaluation Proofs
+  ],
+  [
+    $
+      forall omega^i in H: F(omega^i) attach(=, t: ?) 0 \
+      T(omega^i) = F(omega^i) / (Z_H (omega^i)) \
+      F(xi) attach(=, t: ?) T(xi) times Z_H (xi)
+    $
+    #align(center)[
+      #emph([
+        $Z_H$ for factor theorem; $attach(=, t: ?) 0$
+
+        $xi$ for Schwartz-Zippel; $F != 0$
+      ])]
+  ],
+)
+
+#pagebreak(weak: true)
+
+#grid(
+  columns: (1fr, 1fr),
+  inset: 10pt,
+  align: horizon,
+  [
+    #align(center)[#scale(70%)[$
+      P arrow.r.squiggly V & : plonkprover(vec(X), vec(R), vec(W)) &               = & pi \
+                         V & : plonkverifier(pi, vec(X), vec(R))   & attach(=, t: ?) & top
+    $]]
+    1. Gate Constraint Polynomial
+    2. Vanishing Argument
+    3. *Copy Constraints*
+    4. Grand Product Argument
+    5. Batched Evaluation Proofs
+  ],
+  [
+    #scale(90%)[#circuiteria.circuit({
+        import circuiteria: *
+        gates.gate-and(x: 0, y: 1, w: 1, h: 1, id: "and")
+        gates.gate-or(x: 2.7, y: 0, w: 1, h: 1, id: "or")
+        wire.stub("and-port-in0", "west", length: 0.25, name: $a_1$)
+        wire.stub("and-port-in1", "west", length: 0.25, name: $b_1$)
+        wire.wire("w1", ("and-port-out", "or-port-in0"), style: "zigzag", name: ($$, $a_2$))
+        wire.stub("or-port-in1", "west", length: 3.1, name: $b_2$)
+        wire.stub("and-port-out", "east", length: 3.1, name: $c_1$)
+        wire.stub("or-port-out", "east", length: 0.4, name: $c_2$)
+      })
+      $
+        [a_1, b_1, bold(c_1), bold(a_2), b_2, c_2]
+        &=^? [a_1, b_1, bold(a_2), bold(c_1), b_2, c_2] \
+        sigma = [hat(c)_1 mapsto hat(a)_2, hat(a)_2 &mapsto hat(c)_1, w mapsto w] \
+        {hat(a)_1, hat(b)_1, hat(c)_1, hat(a)_2, hat(b)_2, hat(c)_2} &=^? {hat(a)^sigma_1, hat(b)^sigma_1, hat(c)^sigma_1, hat(a)^sigma_2, hat(b)^sigma_2, hat(c)^sigma_2} \
+        g(omega) dot g(omega^2) &=^? f(omega) dot f(omega^2) \
+      $
+    ]
+  ],
+)
+
+#pagebreak(weak: true)
+
+#align(center)[$
+  P arrow.r.squiggly V & : plonkprover(vec(X), vec(R), vec(W)) &               = & pi \
+                     V & : plonkverifier(pi, vec(X), vec(R))   & attach(=, t: ?) & top
+$]
+
+#grid(
+  columns: (1fr, 1fr),
+  inset: 10pt,
+  align: horizon,
+  [
+    1. Gate Constraint Polynomial
+    2. Vanishing Argument
+    3. Copy Constraints
+    4. *Grand Product Argument*
+    5. Batched Evaluation Proofs
+  ],
+  [
+    $
+      product f(omega^i) & = product g(omega^i) \
+            F_2(omega^n) & attach(=, t: ?) F_1(omega) attach(=, t: ?) 0 \
+                  F_2(X) & = Z(X)f(X) - g(X) Z(omega X) \
+                  F_1(X) & = L_1(X)(Z(X) - 1)
+    $
+    $
+      Z(omega) = 1,
+      Z(omega^(j+1)) = Z(omega^j) f(omega^j) / g(omega^j)
+    $
+  ],
+)
+
+#pagebreak(weak: true)
+
+
+#align(center)[$
+  P arrow.r.squiggly V & : plonkprover(vec(X), vec(R), vec(W)) &               = & pi \
+                     V & : plonkverifier(pi, vec(X), vec(R))   & attach(=, t: ?) & top
+$]
+
+#grid(
+  columns: (1fr, 1fr),
+  inset: 10pt,
+  align: horizon,
+  [
+    1. Gate Constraint Polynomial
+    2. Vanishing Argument
+    3. Copy Constraints
+    4. Grand Product Argument
+    5. *Batched Evaluation Proofs*
+  ],
+  [
+    #scale(80%)[
+      $
+        W(X) = F_1(X) + alpha F_2(X) + alpha^2 F_3(X) + ...
+      $
+    ]
+    #emph([Think: Combines proofs that bind evaluations to polynomial e.g.])
+    $
+       W(X) & = ...+ alpha (A(X) - A(xi)) + ... \
+      W(xi) & attach(=, t: ?) 0
+    $
+  ],
+)
+
+// Note: F, F1, F2 are combined in vanishing as T. W simply checks evaluations at xi i.e. alpha^i(A(X) - v_A)
+// And W_omega is 2nd batch open, for polys that are shifted by one, also use case for relative wires.
 
 == Motivation
 
@@ -300,13 +494,44 @@ $
           (vec(X), vec(R)) & = arith_pub (vec(x), IVC) && = interpolate compose tracepub compose buildf
 $
 #pause
-TODO program > abstract circuit diagram > trace table > XRW
+
+#let build(x) = $bracket.l.double #x bracket.r.double$;
+#grid(
+  columns: (1fr, 1fr, 1fr, 1fr),
+  inset: 0pt,
+  align: horizon + center,
+  smallcaps("Program"), smallcaps("Build"), smallcaps("Trace"), smallcaps("Interpolate"),
+  grid.cell(colspan: 4, v(0.5em)),
+  $(a_1 times b_1) + b_2$,
+  scale(60%)[#circuiteria.circuit({
+      import circuiteria: *
+      gates.gate-and(x: 0, y: 1, w: 1, h: 1, id: "and")
+      gates.gate-or(x: 2.7, y: 0, w: 1, h: 1, id: "or")
+      wire.stub("and-port-in0", "west", length: 0.25, name: $a_1$)
+      wire.stub("and-port-in1", "west", length: 0.25, name: $b_1$)
+      wire.wire("w1", ("and-port-out", "or-port-in0"), style: "zigzag", name: ($$, $a_2$))
+      wire.stub("or-port-in1", "west", length: 3.1, name: $b_2$)
+      wire.stub("and-port-out", "east", length: 3.1, name: $c_1$)
+      wire.stub("or-port-out", "east", length: 0.4, name: $c_2$)
+    })
+  ],
+  scale(50%)[#table(
+    columns: (1fr, 1fr, 1fr, 1fr),
+    align: horizon + center,
+    inset: 10pt,
+    table.cell(colspan: 4, $t$),
+    $X$, $A_1$, $A_2$, $A_3$,
+    $omega^1$, [], [], [], $omega^2$, [], [], [],
+  )],
+  $vec(X), vec(R), vec(W)$
+)
+
 
 == Build
 
 #align(center)[#emph([denotational semantics of a program is its abstract circuit])]
 
-#let build(x) = $bracket.l.double #x bracket.r.double$;
+
 $
   #build($x^2 + y = z^*$)
 $
@@ -319,7 +544,11 @@ $
   =#build($x times x = t$)^s_s' and #build($t + y = z^*$)^s'_s''
 $
 
-TODO abstract circuit diagram AND relation
+#pause
+
+#figure(
+  image("./media/build_example.png",)
+)
 
 == Abstractions
 
@@ -340,11 +569,82 @@ TODO abstract circuit diagram AND relation
   $2$, $dash(w): CWire$, $hat(g): Prpd$, $S: Spec$,
 )
 
-TODO reuse pipeline diagram
+#grid(
+  columns: (1fr, 1fr, 1fr),
+  inset: 10pt,
+  align: horizon + center,
+  smallcaps("lvl 0"), smallcaps("lvl 1"), smallcaps("lvl 2"),
+  scale(50%)[#table(
+    columns: (1fr, 1fr, 1fr, 1fr),
+    align: horizon + center,
+    inset: 10pt,
+    table.cell(colspan: 4, $t$),
+    $X$, $A_1$, $A_2$, $A_3$,
+    $omega^1$, [], [], [], $omega^2$, [], [], [],
+  )],
+  scale(70%)[#circuiteria.circuit({
+      import circuiteria: *
+      gates.gate-and(x: 0, y: 1, w: 1, h: 1, id: "and")
+      gates.gate-or(x: 2.7, y: 0, w: 1, h: 1, id: "or")
+      wire.stub("and-port-in0", "west", length: 0.25, name: $hat(a)_1$)
+      wire.stub("and-port-in1", "west", length: 0.25, name: $hat(b)_1$)
+      wire.wire("w1", ("and-port-out", "or-port-in0"), style: "zigzag", name: ($$, $hat(a)_2$))
+      wire.stub("or-port-in1", "west", length: 3.1, name: $hat(b)_2$)
+      wire.stub("and-port-out", "east", length: 3.1, name: $hat(c)_1$)
+      wire.stub("or-port-out", "east", length: 0.4, name: $hat(c)_2$)
+    })
+  ],
+  scale(50%)[#table(
+    columns: (1fr, 1fr, 1fr, 1fr),
+    align: horizon + center,
+    inset: 10pt,
+    table.cell(colspan: 4, $#math.accent(text("constraint"), "^") (hat(g))$),
+    table.cell(colspan: 4, $t$),
+    $X$, $A_1$, $A_2$, $A_3$,
+    $omega^1$, [], [], []
+  )],
+)
 
 #pagebreak(weak: true)
 
-TODO index map: small trace table example, equation, F_GC eval
+$
+text("IMap") = 
+(t: text("Color")) -> (c: text("Column")) -> X(t,c) -> Y(t,c)
+$
+
+#align(center)[
+#emph([Note how trace tables and pre-constraints are index maps. $vec(X), vec(R), vec(W)$ too])
+]
+
+#pause
+
+#grid(
+  columns: (1fr, 1fr, 1fr),
+  inset: 10pt,
+  align: horizon + center,
+  [#smallcaps("TraceTable") $T$],
+  [#smallcaps("Constraint") $X$],
+  [#smallcaps("Equation") $F$],
+  scale(50%)[#table(
+    columns: (1fr, 1fr, 1fr, 1fr),
+    align: horizon + center,
+    inset: 10pt,
+    table.cell(colspan: 4, $t$),
+    $X$, $A_1$, $A_2$, $A_3$,
+    $omega^1$, $a$, $b$, $c$, $omega^2$, [], [], [],
+  )],
+  scale(50%)[#table(
+    columns: (1fr, 1fr, 1fr),
+    align: horizon + center,
+    inset: 10pt,
+    $A_1$, $A_2$, $A_3$,
+    $a$, $b$, $c$
+  )],
+  $
+    F(A) &= A_1 + A_2 - A_3 \
+    F(X) &= a + b - c
+  $
+)
 
 == Trace
 
