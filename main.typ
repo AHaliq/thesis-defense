@@ -194,7 +194,7 @@
       script(text(#emoji.silhouette.double)_i #h(0.5em) attach(stretch(->), t: schnorrsign) #h(0.5em) text(#emoji.silhouette.double)_(i+1))
     $
     $
-      sscript(Phi(pi_i) & = schnorrverify(text(#emoji.silhouette.double)_(i+1), text(#emoji.silhouette.double)_i))
+      sscript(Phi(text(#emoji.silhouette.double)_(i+1)) & = schnorrverify(text(#emoji.silhouette.double)_(i), text(#emoji.silhouette.double)_(i+1)))
     $])
 ][
   $s$ contains the current committee public key. $F$ is the current committee signing off the next committee.
@@ -309,39 +309,6 @@ $]
 
 #pagebreak(weak: true)
 
-#align(center)[$
-  P arrow.r.squiggly V & : plonkprover(vec(X), vec(R), vec(W)) &               = & pi \
-                     V & : plonkverifier(pi, vec(X), vec(R))   & attach(=, t: ?) & top
-$]
-
-#grid(
-  columns: (1fr, 1fr),
-  inset: 10pt,
-  align: horizon,
-  [
-    1. Gate Constraint Polynomial
-    2. *Vanishing Argument*
-    3. Copy Constraints
-    4. Grand Product Argument
-    5. Batched Evaluation Proofs
-  ],
-  [
-    $
-      forall omega^i in H: F(omega^i) attach(=, t: ?) 0 \
-      T(omega^i) = F(omega^i) / (Z_H (omega^i)) \
-      F(xi) attach(=, t: ?) T(xi) times Z_H (xi)
-    $
-    #align(center)[
-      #emph([
-        $Z_H$ for factor theorem; $attach(=, t: ?) 0$
-
-        $xi$ for Schwartz-Zippel; $F != 0$
-      ])]
-  ],
-)
-
-#pagebreak(weak: true)
-
 #grid(
   columns: (1fr, 1fr),
   inset: 10pt,
@@ -437,7 +404,7 @@ $]
         W(X) = F_1(X) + alpha F_2(X) + alpha^2 F_3(X) + ...
       $
     ]
-    #emph([Think: Combines proofs that bind evaluations to polynomial e.g.])
+    #emph([Think: Combines proofs that "bind" evaluations to polynomial e.g.])
     $
        W(X) & = ...+ alpha (A(X) - A(xi)) + ... \
       W(xi) & attach(=, t: ?) 0
@@ -659,25 +626,62 @@ $
   trace = grayed(lfp)(resolvem(gatem(copym)), grayed(text("eq")), grayed(s_bot))
 $
 
-#text(size: 1em)[#table(
-  columns: (2fr, 1fr, 1fr, 2fr),
+#table(
+  columns: (1fr, 1fr, 1fr, 1fr, 1fr),
   inset: 10pt,
   align: horizon + center,
-  table.header($resolvem$, $gatem$, $gatempub$, $copym$),
-  [vmap], table.cell(colspan: 2, [pre-constraints]), [loop],
-  $hat(vec(Y))$, table.cell(colspan: 2, [$T$]), $vec(sigma)$,
-)]
+  table.cell(colspan: 2, smallcaps("resolve")),
+  smallcaps("gate"),
+  table.cell(colspan: 2, smallcaps("copy")),
+  table.cell(colspan: 2, [vmap, $hat(vec(Y))$]),
+  [$T$],
+  table.cell(colspan: 2, [loop, $vec(sigma)$]),
+  [$mat(hat(w)_n; dots.v; hat(w)_1) \ bot$],
+  [$mat(hat(w)_n; dots.v; hat(w)_1) \ hat(w)_n mapsto w_n$],
+  [$underline(g #h(0.25em) hat(w)_n) in hat(f)$
+  #table(
+    columns: (1fr),
+    inset: 10pt,
+    align: horizon + center,
+    $T$,
+    $dots.v$,
+    $text("ctrn")(g)$
+  )
+  ],
+  [$hat(w)_n mapsto {(i,A_j), ...}$],
+  [$vec(sigma) \ mat(delim: "[", (i,A_j) mapsto p; dots.v) $]
+)
 
-TODO visuals for stack, trace table, and permutation
-
+// 1. we have a stack of wires to resolve, and value maps
+// 2. if the gate that outputs the wire, has its inputs resolved, we can compute the values of its output, we then update the value map e.g. if the inputs to the add gate are resolved, we can use the canonical add program to compute the output.
+// 3. with the values we can instantiate the pre-constraints and concat that to the trace table.
+// 4. when a gate is resolved, we populate a set of coordinates (row and column in trace table) with the same wires. this is called a loop.
+// 5. when all loops are computed, the permutation, is coordinates and its next, if it is last it will point to the first, if its alone, it points to itself.
 
 == Interpolate
 
-TODO
-- root of unity and cosets
-- fast fourier interpolation
-- tie trace table to gate constraints
-- tie permutation to copy constraints
+#align(center)[#emph([For each type $t$ e.g. $FF_q$ we find a $omega$ of order $>=$ number of constraints])]
+
+$
+H_0 = angle.l omega angle.r, H_1 = angle.l k_1 omega angle.r, ...
+$
+
+#pause
+
+#align(center)[#emph([Each row indexed by $omega^i$; thus we fast fourier interpolate per column])]
+
+$
+  T^q (A_i): FF_q [X]
+$
+
+#pause
+
+#align(center)[#emph([We split them to public input, selectors, and witnesses])]
+
+$
+  (vec(X), vec(R), vec(W)) = text("split")(T)
+$
+
 
 == Example
 
@@ -685,21 +689,28 @@ TODO: tie to motivation in overview
 - poseidon gate
 - message passing gate & public input gate
 
+how to present a properad? full pre-constraints? rough sketch? give simple example first? jump to relative wires in poseidon? omit features just talk about use case in IVC?
+
 = Conclusion
 
 == Summary
 
-TODO
-- IVC for light node catchup
-- informs arithmetization demands
-- benefits of formalization
-- general scheme extending beyond thesis use case and even plonk
+- to implement IVC for light node catchup, we need a SNARK
+- Plonk is a SNARK but needs an arithmetization scheme that is feasible
+- The abstractions used to define arithmetization makes
+  - some classes of bugs impossible
+  - algebraic optimizations
+  - clean expressivity e.g. index maps
+  - primitives for proofs.
+- The abstractions has use case beyond IVC, catchup and even plonk.
 
 == Future Work
 
-TODO
-- full specification (copy, interpolate, prover, verifier); agda? hacspec?
-- properad and relative gate compute caching
-- user domain specific algebraic optimization via egglog rewriting
-- dependent properads (e.g.table row count dependent properads); root of unity, optimal multi lookup (dynamic mina lookups)
-- full correctness and soundness proofs of arith
+- Full specification (copy, interpolate, prover, verifier)
+- Formal specification. In agda? hacspec?
+- Properad and relative gate compute caching; abstraction level 2
+- User domain specific algebraic optimization via egglog rewriting
+- Dependent properads; table row count dependent properads
+  - root of unity as a canonical program, not ad hoc in interpolate
+  - optimal multi lookup (dynamic mina lookups)
+- Correctness and Soundness proofs of arith in full generality.
