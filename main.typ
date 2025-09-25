@@ -108,7 +108,7 @@
     $,
   )
 ][
-  Plonk uses polynomial commitment schemes, thus the verifier checks commitments. However we can offload this to the accumulation scheme. Without the check it is fast; sub-linear.
+  Plonk uses polynomial commitment schemes, thus the verifier checks commitments. However we can offload this to the light node verifying the final $vec(X)$. Without the check it is fast; sub-linear.
 
   #emph([Think: $pi$ is an instance; $vec(q)$. And $vec(X)$ is composed of the accumulator.])
 ]
@@ -138,10 +138,10 @@
   #box(stroke: black, inset: 1em, [
     #emph([More on this in message passing])])
 ][
-  Computing commits uses scalar multiplication; $m G$, thus two fields; scalar $m: FF_cal(S)$ and base $G: EE(FF_cal(B))$. Pasta curves is a two cycle of curves where the scalar field of the other is its base field. This can express $m G$ as a circuit.
+  Computing commits uses point multiplication; $m G$, thus two fields; scalar $m: FF_cal(S)$ and base $G: EE(FF_cal(B))$. Pasta curves is a two cycle of curves where the scalar field of the other is its base field. This can express $m G$ as a circuit.
 
   #emph(
-    [Think: A circuit has multiple types. If a circuit $vec(R)^((t))$ has canonical type $t$, then $vec(R)^((p))$ sets $t = p$ and $t'=q$],
+    [Think: A circuit has multiple types. We verify for each.],
   )
 ]
 
@@ -222,6 +222,8 @@
   Very small proofs of large statements
 ])]
 
+#pause
+
 #align(center)[$
   (vec(x), vec(w)) in R_IVC
 $]
@@ -229,6 +231,8 @@ $]
 - *Public Inputs* are "_interfaces_" that behaviorally
   - assert values
   - instantiate / "_inject_" values
+
+#pause
 
 #text(size: 0.8em)[
   e.g. take the program $f(w) = (a times w) + w$, if $vec(x) = (a, a times w)$ then $((2,6),(3)) in vec(R)_f$.
@@ -248,6 +252,7 @@ $]
                      V & : plonkverifier(pi, vec(X), vec(R))   & attach(=, t: ?) & top
 $]
 
+#pause 
 #grid(
   columns: (1fr, 1fr),
   inset: 10pt,
@@ -269,7 +274,7 @@ $]
       $omega^1$, $1$, $2$, $3$, $omega^2$, $42$, $12$, $54$,
     )
     $
-      F(X) = A_1(X) + A_2(X) - A_3(X)
+      F(X) = A_1 + A_2 - A_3
     $
   ],
 )
@@ -307,6 +312,8 @@ $]
   ],
 )
 
+// Note: FGC, F1, F2 are linear combined into quotient polynomial T. then coeffecient split into polynomials within degree bounds. Then vanishing is done on the single T.
+
 #pagebreak(weak: true)
 
 #grid(
@@ -339,8 +346,9 @@ $]
       $
         [a_1, b_1, bold(c_1), bold(a_2), b_2, c_2]
         &=^? [a_1, b_1, bold(a_2), bold(c_1), b_2, c_2] \
-        sigma = [hat(c)_1 mapsto hat(a)_2, hat(a)_2 &mapsto hat(c)_1, w mapsto w] \
+        grayed(sigma = [hat(c)_1 mapsto hat(a)_2, hat(a)_2 &mapsto hat(c)_1, hat(w) mapsto hat(w)]) \
         {hat(a)_1, hat(b)_1, hat(c)_1, hat(a)_2, hat(b)_2, hat(c)_2} &=^? {hat(a)^sigma_1, hat(b)^sigma_1, hat(c)^sigma_1, hat(a)^sigma_2, hat(b)^sigma_2, hat(c)^sigma_2} \
+        grayed(g(omega^i) = hat(a)_i dot hat(b)_i dot hat(c)_i &#h(0.5em) f(omega^i) = hat(a)_i^sigma dot hat(b)_i^sigma dot hat(c)_i^sigma) \
         g(omega) dot g(omega^2) &=^? f(omega) dot f(omega^2) \
       $
     ]
@@ -668,6 +676,14 @@ $
 
 #pause
 
+#align(center)[#emph([We compute columns for copy constraint columns permutation from $H_i, vec(sigma)$])]
+
+$
+  sigma_1, sigma_2, ...
+$
+
+#pause
+
 #align(center)[#emph([Each row indexed by $omega^i$; thus we fast fourier interpolate per column])]
 
 $
@@ -685,17 +701,79 @@ $
 
 == Example
 
-TODO: tie to motivation in overview
-- poseidon gate
-- message passing gate & public input gate
+#align(center)[#emph([The definition of add and mul properads])]
 
-how to present a properad? full pre-constraints? rough sketch? give simple example first? jump to relative wires in poseidon? omit features just talk about use case in IVC?
+#figure(
+  image("./media/eg_1_1.png", width: 100%),
+)
+
+#pagebreak(weak: true)
+
+#align(center)[#emph([Take the following circuit as an example])]
+
+#figure(
+  image("./media/eg_1_2.png", width: 100%),
+)
+
+// Point addition, equality check, inverse, are all basic custom properads like this except with custom term
+
+#let constraint = $text("constraint")$;
+#text(size: 0.7em)[
+$
+  fgc^(cal("P")frak("lon")cal("K"))(X) &= A Q_l + B Q_r + C Q_o + A B Q_m + Q_c + P I \
+  fgc^(cal("P")frak("lon")cal("K"))(constraint(T,q,1)) &= - t + w_2 w_3 \
+  fgc^(cal("P")frak("lon")cal("K"))(constraint(T,q,2)) &= w_1 + t - z \
+$
+]
+
+#pagebreak(weak: true)
+
+#figure(
+  image("./media/eg_1_4.png", width: 100%),
+)
+
+// Poseidon does a similar trick
+// Poseidon contains 55 full rounds
+// - it takes 3 inputs
+// - runs it through sbox; x^7
+// - multiplies by an mds matrix constant
+// - adds round constants; unique per round
+// - the 5th round outputs are referenced at the next row (relative)
+// - the 55th output is in the base properad of poseidon zero row
+// 
+// Scalar mul does a similar trick
+// - let A be point at infinity
+// - Double and add decomposes the scalar into bits
+// - an accumulator takes bit times 2^i; at the end accumulator will have value of scalar
+// - if 1; then double A and add with point
+// - if 0; then just double A
+// - this models repeated addition of point by scalar amount
+// - there is a relationship between A and the double point via lambda = 3x_a^2/2y_a
+// - each round is this constraint
+// - it can be improved by lookups instead of bit 0,1 we deal with lookup ranges 0-7 or smth
+
+#pagebreak(weak: true)
+
+#align(center)[#emph([Global inputs and public inputs are properads too as seen before])]
+
+#figure(
+  image("./media/eg_1_5.png", width: 100%),
+)
+
+In IVC, point mul and hashes uses value from the non canonical type.
+- $p>q$
+- pass a $FF_q$ to $FF_p$; commit $C = v^((q)) dot G_1^((q))$ via double add as PI of next
+- pass a $FF_p$ to $FF_q$; decomp $v^((p))=2h^((p)) + l^((p))$ thus $C= h G_1 + l G_2$
+- the commits can be combined into one, values are a vector in $vec(X)$
+- the final non circuit verifier does commitment check
+
+// and range check of h and boolean check of l
 
 = Conclusion
 
 == Summary
 
-- to implement IVC for light node catchup, we need a SNARK
+- To implement IVC for light node catchup, we need a SNARK
 - Plonk is a SNARK but needs an arithmetization scheme that is feasible
 - The abstractions used to define arithmetization makes
   - some classes of bugs impossible
@@ -707,10 +785,14 @@ how to present a properad? full pre-constraints? rough sketch? give simple examp
 == Future Work
 
 - Full specification (copy, interpolate, prover, verifier)
-- Formal specification. In agda? hacspec?
+- Computer formalization. In agda? hacspec?
 - Properad and relative gate compute caching; abstraction level 2
 - User domain specific algebraic optimization via egglog rewriting
-- Dependent properads; table row count dependent properads
-  - root of unity as a canonical program, not ad hoc in interpolate
-  - optimal multi lookup (dynamic mina lookups)
+- Dependent properads; table / circuit dependent properads
+  - root of unity as a canonical program instead of public input inject
+  - optimal multi lookup (lookup table size vs number of calls to decomposed lookups optimization)
 - Correctness and Soundness proofs of arith in full generality.
+
+= Thank You <touying:hidden>
+
+#focus-slide[Thank You]
